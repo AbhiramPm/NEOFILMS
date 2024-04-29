@@ -1,0 +1,90 @@
+package sample_new;
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.Status;
+import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+
+import java.io.IOException;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+public class slashes {
+
+    private WebDriver driver;
+    private ExtentReports extent;
+    private ExtentTest test;
+
+    @BeforeMethod
+    public void setUp() {
+        // Initialize ExtentReports
+        String customLocation = "C:\\Users\\Abhiram\\OneDrive\\Documents\\TESTNG fIles  to tjhis location\\NEOSlashes.html";
+        ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter(customLocation);
+
+        extent = new ExtentReports();
+        extent.attachReporter(htmlReporter);
+
+        // Create a new ExtentTest
+        test = extent.createTest("Selenium Test", "Test Description");
+
+        // Setup EdgeDriver using WebDriverManager
+        WebDriverManager.edgedriver().setup();
+        // Create a new instance of EdgeDriver
+        driver = new EdgeDriver();
+    }
+
+    @Test
+    public void testSelenium() throws IOException {
+        // Define URL to test
+        String url = "https://www.neofilmschool.com/admission//";
+
+        // Navigate to the web page
+        driver.get(url);
+
+        // Log test status
+        test.log(Status.INFO, "Navigated to " + url);
+
+        // Get status code
+        int statusCode = getStatusCode(url);
+
+        // Log status code
+        test.log(Status.INFO, "Status Code: " + statusCode);
+
+        // Assert status code
+        if (statusCode == 404) {
+            test.log(Status.FAIL, "Page is not valid (404 error)");
+        } else {
+            test.log(Status.PASS, "Page is valid");
+        }
+
+        // Assert status code
+        Assert.assertEquals(statusCode, 404);
+    }
+
+    @AfterMethod
+    public void tearDown() {
+        // Close the browser
+        driver.quit();
+
+        // End the test and generate the report
+        extent.flush();
+    }
+
+    // Method to retrieve HTTP status code
+    public int getStatusCode(String url) throws IOException {
+        CloseableHttpClient client = HttpClients.createDefault();
+        HttpGet request = new HttpGet(url);
+        CloseableHttpResponse response = client.execute(request);
+        return response.getStatusLine().getStatusCode();
+    }
+}
